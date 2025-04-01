@@ -1,3 +1,4 @@
+```
 .
 ├── .env
 ├── .gitignore
@@ -26,3 +27,4 @@
             ├── data_processing.py
             ├── mal_api.py
             └── __init__.py
+```
