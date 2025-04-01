@@ -3,7 +3,6 @@ from aiogram.filters import CommandStart
 
 from bot.keyboards.user_keyboards import get_main_kb
 
-
 async def cmd_start(msg: types.Message) -> None:
     """Command start
 
@@ -39,14 +38,7 @@ async def handle_main_menu(msg: types.Message) -> None:
 
 
 def register_user_handlers(dp: Dispatcher) -> None:
-    """
 
-    Args:
-        dp:
-
-    Returns:
-
-    """
     router = Router()
     router.message.register(cmd_start, CommandStart())
 
