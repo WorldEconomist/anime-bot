@@ -1,34 +1,58 @@
 from dotenv import load_dotenv
 import os
-import requests
 import json
 import pathlib
+import aiohttp
+from typing import Dict, Optional
 
-load_dotenv()
-TOKEN = os.getenv("MAL_API_TOKEN")
 
-url = "https://api.myanimelist.net/v2/anime/ranking"
-headers = {'Authorization': f'Bearer {TOKEN}'}
-params = {'ranking_type': 'all',
-          'fields': 'rank, title, mean, start_date, num_list_users, num_episodes, alternative_titles',
-          'limit': 25}
 
-try:
-    r = requests.get(url, params=params, headers=headers)
-    anime_rate_raw_json = r.json()
 
-except requests.exceptions.HTTPError as errh:
-    print("Http Error:", errh)
-except requests.exceptions.ConnectionError as errc:
-    print("Error Connecting:", errc)
-except requests.exceptions.Timeout as errt:
-    print("Timeout Error:", errt)
-except requests.exceptions.RequestException as err:
-    print("Something went wrong:", err)
+class MALAPIRequest:
+    def __init__(self):
+        load_dotenv()
+        self.TOKEN = os.getenv("MAL_API_TOKEN")
+        self.base_url = "https://api.myanimelist.net/v2"
+        self.headers = {'Authorization': f'Bearer {self.TOKEN}'}
 
-ROOT = pathlib.Path(__file__).parent.parent.parent.parent
-DATA_DIR = ROOT / 'data' / 'raw'
+        self.root = pathlib.Path(__file__).parent.parent.parent.parent
+        self.data_dir = self.root / 'data' / 'raw'
+        os.makedirs(self.data_dir, exist_ok=True)
 
-os.makedirs(DATA_DIR, exist_ok=True)
-with open(DATA_DIR / 'anime_rate_json.json', 'w', encoding='utf-8') as f:
-    json.dump(anime_rate_raw_json, f, ensure_ascii=False, indent=4)
+    async def get_anime_ranking(self,
+                                ranking_type: str = 'all',
+                                limit: int = 25) -> Optional[Dict]:
+        params = {
+            'ranking_type': ranking_type,
+            'fields': 'rank, title, mean, start_date, num_list_users, num_episodes, alternative_titles',
+            'limit':limit
+        }
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(f'{self.base_url}/anime/ranking',
+                                       headers = self.headers,
+                                       params = params) as response:
+
+                    if response.status != 200:
+                        raise aiohttp.ClientResponseError(
+                            response.request_info,
+                            response.history,
+                            status=response.status
+                        )
+
+                    anime_rate_raw_json = await response.json()
+
+                    with open(self.data_dir / 'anime_rate_raw_json.json', 'w', encoding = 'utf-8') as f:
+                        json.dump(anime_rate_raw_json, f, ensure_ascii=False, indent=4)
+                        return anime_rate_raw_json
+
+        except aiohttp.ClientResponseError as e:
+            print(f"Http Error: {e.status}")
+        except aiohttp.ClientConnectionError as e:
+            print(f"Error Connecting: {e}")
+        except aiohttp.ClientTimeout as e:
+            print(f"Timeout Error: {e}")
+        except Exception as e:
+            print(f"Something went wrong: {e}")
+        return None
