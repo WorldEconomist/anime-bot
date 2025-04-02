@@ -46,5 +46,8 @@ class ProcessData:
             raw_df_name = f"{ranking_type}_data_processed"
 
         df = pd.DataFrame(raw_data_list)
+        df['release_date'] = pd.to_datetime(df['release_date'])
+        df['short_date'] = df['release_date'].dt.strftime("%B %Y")
+
         df.to_csv(self.processed_data_dir / f'{raw_df_name}.csv', index=False)
         return df
