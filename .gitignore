@@ -6,3 +6,4 @@ src/bot/__pycache__/
 src/bot/handlers/__pycache__/
 src/bot/keyboards/__pycache__/
 data/
+/src/bot/tests/

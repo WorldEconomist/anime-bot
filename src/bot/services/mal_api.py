@@ -16,15 +16,28 @@ class MALAPIRequest:
         self.headers = {'Authorization': f'Bearer {self.TOKEN}'}
 
         self.root = pathlib.Path(__file__).parent.parent.parent.parent
-        self.data_dir = self.root / 'data' / 'raw'
-        os.makedirs(self.data_dir, exist_ok=True)
+        self.raw_data_dir = self.root / 'data' / 'raw'
+        os.makedirs(self.raw_data_dir, exist_ok=True)
 
     async def get_anime_ranking(self,
                                 ranking_type: str = 'all',
                                 limit: int = 25) -> Optional[Dict]:
+        """
+        Get anime ranking data from MyAnimeList API.
+        Args:
+            ranking_type: str
+                Type of ranking to retrieve. Options are 'all', 'bypopularity','airing',
+            limit: int
+                Number of results to return. Default is 25.
+
+        Returns:
+            json object containing anime ranking data.
+        """
+
         params = {
             'ranking_type': ranking_type,
-            'fields': 'rank, title, mean, start_date, num_list_users, num_episodes, alternative_titles',
+            'fields': ('rank, title, mean, start_date, num_list_users,'
+                       'num_episodes, media_type, alternative_titles'),
             'limit':limit
         }
 
@@ -43,9 +56,14 @@ class MALAPIRequest:
 
                     anime_rate_raw_json = await response.json()
 
-                    with open(self.data_dir / 'anime_rate_raw_json.json', 'w', encoding = 'utf-8') as f:
-                        json.dump(anime_rate_raw_json, f, ensure_ascii=False, indent=4)
-                        return anime_rate_raw_json
+                    with open(self.raw_data_dir / 'anime_rate_raw_json.json',
+                              'w',
+                              encoding = 'utf-8') as f:
+                        json.dump(anime_rate_raw_json,
+                                  f,
+                                  ensure_ascii=False,
+                                  indent=4)
+                    return anime_rate_raw_json
 
         except aiohttp.ClientResponseError as e:
             print(f"Http Error: {e.status}")
