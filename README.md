@@ -1,30 +1,33 @@
 ```
-.
+# MAL Telegram Bot  
 ├── .env
 ├── .gitignore
 ├── poetry.lock
 ├── pyproject.toml
 ├── README.md
-│
-├── data
-│   ├── processed
-│   └── raw
-│       └── anime_rate_json.json
-│
-└── src
+├── data/
+│   ├── processed/
+│   │   ├── airing_data_processed.csv
+│   │   ├── all_data_processed.csv
+│   │   └── bypopularity_data_processed.csv
+│   └── raw/
+│       ├── airing_data_raw.json
+│       ├── all_data_raw.json
+│       └── bypopularity_data_raw.json
+└── src/
     ├── main.py
-    └── bot
+    └── bot/
         ├── __init__.py
-        ├── handlers
-        │   ├── user_handlers.py
-        │   └── __init__.py
-        │
-        ├── keyboards
-        │   ├── user_keyboards.py
-        │   └── __init__.py
-        │
-        └── services
-            ├── data_processing.py
-            ├── mal_api.py
-            └── __init__.py
+        ├── handlers/
+        │   ├── __init__.py
+        │   └── user_handlers.py
+        ├── keyboards/
+        │   ├── __init__.py
+        │   └── user_keyboards.py
+        ├── services/
+        │   ├── __init__.py
+        │   ├── data_processing.py
+        │   └── mal_api.py
+        └── tests/
+            └── test_mal_services.py
 ```
