@@ -27,39 +27,23 @@ class ProcessData:
         for anime in raw_data['data']:
             node = anime['node']
 
-            if ranking_type == 'all':
-                raw_data_list.append(
-                    {
-                        'rank':anime.get('rank', None),
-                        'title':node.get('alternative_titles', {}).get('en',
-                                                                       None),
-                        'romaji_title':node.get('title', None),
-                        'score':node.get('mean', None),
-                        'popularity':node.get('num_list_users', None),
-                        'release_date':node.get('start_date', None),
-                        'type':str.upper(node.get('media_type', None)),
-                        'episodes':node.get('num_episodes', None),
-                        'pic':node.get('main_picture', {}).get('large',
-                                                               'medium')
-                    }
-                )
-            elif ranking_type == 'bypopularity' or ranking_type == 'airing':
-                raw_data_list.append(
-                    {
-                        'rank':anime.get('ranking', {}).get('rank', None),
-                        'title':node.get('alternative_titles', {}).get('en',
-                                                                       None),
-                        'romaji_title':node.get('title', None),
-                        'score':node.get('mean', None),
-                        'popularity':node.get('num_list_users', None),
-                        'release_date':node.get('start_date', None),
-                        'type': str.upper(node.get('media_type', None)),
-                        'episodes':node.get('num_episodes', None),
-                        'pic':node.get('main_picture', {}).get('large',
-                                                               'medium')
-                    }
-                )
-            raw_df_name = f"raw_{ranking_type}_data_list"
+            raw_data_list.append(
+                {
+                    'rank':anime.get('ranking', {}).get('rank'),
+                    'title':node.get('alternative_titles', {}).get('en',
+                                                                   None),
+                    'romaji_title':node.get('title', None),
+                    'score':node.get('mean', None),
+                    'popularity':node.get('num_list_users', None),
+                    'release_date':node.get('start_date', None),
+                    'type':str.upper(node.get('media_type', None)),
+                    'episodes':node.get('num_episodes', None),
+                    'pic':node.get('main_picture', {}).get('large',
+                                                            'medium')
+                }
+            )
+
+            raw_df_name = f"{ranking_type}_data_processed"
 
         df = pd.DataFrame(raw_data_list)
         df.to_csv(self.processed_data_dir / f'{raw_df_name}.csv', index=False)

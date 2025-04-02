@@ -19,8 +19,9 @@ class MALAPIRequest:
         self.raw_data_dir = self.root / 'data' / 'raw'
         os.makedirs(self.raw_data_dir, exist_ok=True)
 
+
     async def get_anime_ranking(self,
-                                ranking_type: str = 'all',
+                                ranking_type: str,
                                 limit: int = 25) -> Optional[Dict]:
         """
         Get anime ranking data from MyAnimeList API.
@@ -31,21 +32,23 @@ class MALAPIRequest:
                 Number of results to return. Default is 25.
 
         Returns:
-            json object containing anime ranking data.
+            json object containing anime ranking data or None if error occurs
         """
 
         params = {
             'ranking_type': ranking_type,
             'fields': ('rank, title, mean, start_date, num_list_users,'
                        'num_episodes, media_type, alternative_titles'),
-            'limit':limit
+            'limit': limit
         }
+
+        filename = f'{ranking_type}_data_raw.json'
 
         try:
             async with aiohttp.ClientSession() as session:
                 async with session.get(f'{self.base_url}/anime/ranking',
-                                       headers = self.headers,
-                                       params = params) as response:
+                                       headers=self.headers,
+                                       params=params) as response:
 
                     if response.status != 200:
                         raise aiohttp.ClientResponseError(
@@ -56,9 +59,9 @@ class MALAPIRequest:
 
                     anime_rate_raw_json = await response.json()
 
-                    with open(self.raw_data_dir / 'anime_rate_raw_json.json',
+                    with open(self.raw_data_dir / filename,
                               'w',
-                              encoding = 'utf-8') as f:
+                              encoding='utf-8') as f:
                         json.dump(anime_rate_raw_json,
                                   f,
                                   ensure_ascii=False,
@@ -73,4 +76,5 @@ class MALAPIRequest:
             print(f"Timeout Error: {e}")
         except Exception as e:
             print(f"Something went wrong: {e}")
-        return None
+
+        return {"data": []}
