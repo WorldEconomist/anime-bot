@@ -1,7 +1,15 @@
+import time
+from collections import defaultdict
 from aiogram import F, types, Dispatcher, Router
 from aiogram.filters import CommandStart
 
 from bot.keyboards.user_keyboards import get_main_kb
+from bot.services.data_processing import ProcessData
+
+data_processor = ProcessData()
+
+user_last_request = defaultdict(float)
+RATE_LIMIT = 5
 
 async def cmd_start(msg: types.Message) -> None:
     """Command start
@@ -27,14 +35,32 @@ async def cmd_start(msg: types.Message) -> None:
 
 
 async def handle_main_menu(msg: types.Message) -> None:
-    """
-    Args:
-        msg: объект сообщения с кнопки главного меню
+    user_id = msg.from_user.id
+    current_time = time.time()
 
-    Returns:
-        None
-    """
+    if current_time - user_last_request[user_id] < RATE_LIMIT:
+        await msg.answer("⚠️ Пожалуйста, подождите несколько секунд перед следующим запросом")
+        return
+
+    user_last_request[user_id] = current_time
+
     await msg.answer("⏳ Обрабатываю ваш запрос...")
+
+    result = None
+    if msg.text == 'Самые рейтинговые онгоинги':
+        result = data_processor.format_output(None, 'airing')
+    elif msg.text == 'Топ по рейтингу':
+        result = data_processor.format_output(None, 'all')
+    elif msg.text == 'Топ по популярности':
+        result = data_processor.format_output(None, 'bypopularity')
+    elif msg.text == 'Получить рекомендации':
+        # Заглушка для будущей функциональности
+        result = "🎯 Функция рекомендаций находится в разработке"
+
+    if result:
+        await msg.answer(result)
+    else:
+        await msg.answer("❌ Произошла ошибка при обработке запроса")
 
 
 def register_user_handlers(dp: Dispatcher) -> None:
@@ -53,3 +79,5 @@ def register_user_handlers(dp: Dispatcher) -> None:
     )
 
     dp.include_router(router)
+
+

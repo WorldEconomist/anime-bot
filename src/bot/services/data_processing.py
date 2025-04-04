@@ -2,6 +2,10 @@ import pandas as pd
 import pathlib
 import os
 import json
+import locale
+
+locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+
 
 class ProcessData:
     def __init__(self):
@@ -48,6 +52,27 @@ class ProcessData:
         df = pd.DataFrame(raw_data_list)
         df['release_date'] = pd.to_datetime(df['release_date'])
         df['short_date'] = df['release_date'].dt.strftime("%B %Y")
-
         df.to_csv(self.processed_data_dir / f'{raw_df_name}.csv', index=False)
         return df
+
+    def format_output(self, df: pd.DataFrame, ranking_type: str) -> str:
+        file_path = f"{self.processed_data_dir}/{ranking_type}_data_processed.csv"
+        try:
+            df = pd.read_csv(file_path)
+            df['popularity'] = df['popularity'].apply(lambda x: '{:,}'.format(int(x)).replace(',', ' '))
+        except FileNotFoundError:
+            return "❌ Данные временно недоступны"
+
+        formatted = []
+        for index, row in df.head(5).iterrows():
+            title = row['title'] if pd.notna(row['title']) else row['romaji_title']
+            episodes = row['episodes'] if row['episodes'] != 0 else "количество неизвестно"
+            formatted.append(
+                f"🏆 {row['rank']} | {title} | 📅 {row['short_date']}\n\n"
+                f"⭐️ Рейтинг: {row['score']} \n\n"
+                f"📶 Зрители: {row['popularity']} \n\n"
+                f"📺 {row['type']} | 🎬 Эпизодов: {episodes}\n\n"
+                f"───────────────"
+            )
+
+        return "\n\n".join(formatted)[:4096]
