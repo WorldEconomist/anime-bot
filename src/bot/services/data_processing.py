@@ -68,10 +68,10 @@ class ProcessData:
             title = row['title'] if pd.notna(row['title']) else row['romaji_title']
             episodes = row['episodes'] if row['episodes'] != 0 else "количество неизвестно"
             formatted.append(
-                f"🏆 {row['rank']} | {title} | 📅 {row['short_date']}\n\n"
-                f"⭐️ Рейтинг: {row['score']} \n\n"
-                f"📶 Зрители: {row['popularity']} \n\n"
-                f"📺 {row['type']} | 🎬 Эпизодов: {episodes}\n\n"
+                f"🏆 {row['rank']} | {title} | 📅 {row['short_date']}\n"
+                f"⭐️ Рейтинг: {row['score']} \n"
+                f"📶 Зрители: {row['popularity']} \n"
+                f"📺 {row['type']} | 🎬 Эпизодов: {episodes}\n"
                 f"───────────────"
             )
 
