@@ -8,7 +8,7 @@ class CacheManager:
     def __init__(self):
         self.cache_dir = Path(__file__).parent.parent.parent.parent
         self.cache_data_dir = self.cache_dir / 'data' / 'raw'
-        self.cache_lifetime = 3600  # 1 час в секундах
+        self.cache_lifetime = 3600  # 1 hour in seconds
 
     def get_cached_data(self, ranking_type: str) -> dict | None:
         """

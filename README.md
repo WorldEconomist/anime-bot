@@ -6,10 +6,6 @@
 ├── pyproject.toml
 ├── README.md
 ├── data/
-│   ├── processed/
-│   │   ├── airing_data_processed.csv
-│   │   ├── all_data_processed.csv
-│   │   └── bypopularity_data_processed.csv
 │   └── raw/
 │       ├── airing_data_raw.json
 │       ├── all_data_raw.json
@@ -26,6 +22,7 @@
         │   └── user_keyboards.py
         ├── services/
         │   ├── __init__.py
+        │   ├── cache_manager.py
         │   ├── data_processing.py
         │   └── mal_api.py
         └── tests/

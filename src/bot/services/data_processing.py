@@ -9,7 +9,9 @@ class ProcessData:
     def __init__(self):
         self.root = pathlib.Path(__file__).parent.parent.parent.parent
 
-    def process_anime_data(self, raw_data: dict, ranking_type: str) -> pd.DataFrame:
+    def process_anime_data(self,
+                           raw_data: dict,
+                           ranking_type: str) -> pd.DataFrame:
         """
         Process raw anime data from MyAnimeList API to a DataFrame.
         Args:
@@ -45,14 +47,20 @@ class ProcessData:
 
     def format_output(self, df: pd.DataFrame, ranking_type: str) -> str:
         try:
-            df['popularity'] = df['popularity'].apply(lambda x: '{:,}'.format(int(x)).replace(',', ' '))
+            df['popularity'] = (
+                df['popularity'].apply(
+                    lambda x: '{:,}'.format(int(x)).replace(',', ' ')
+                )
+            )
         except FileNotFoundError:
             return "❌ Данные временно недоступны"
 
         formatted = []
         for index, row in df.head(5).iterrows():
-            title = row['title'] if pd.notna(row['title']) and row['title'] else row['romaji_title']
-            episodes = row['episodes'] if row['episodes'] != 0 else "количество неизвестно"
+            title = row['title'] if pd.notna(row['title']) and row['title'] \
+                                 else row['romaji_title']
+            episodes = row['episodes'] if row['episodes'] != 0 \
+                                       else "количество неизвестно"
             formatted.append(
                 f"🏆 {row['rank']} | {title} | 📅 {row['short_date']}\n"
                 f"⭐️ Рейтинг: {row['score']} \n"

@@ -1,5 +1,4 @@
 import time
-import json
 from collections import defaultdict
 from aiogram import F, types, Dispatcher, Router
 from aiogram.filters import CommandStart
