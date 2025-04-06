@@ -1,12 +1,17 @@
 import time
+import json
 from collections import defaultdict
 from aiogram import F, types, Dispatcher, Router
 from aiogram.filters import CommandStart
 
 from bot.keyboards.user_keyboards import get_main_kb
 from bot.services.data_processing import ProcessData
+from bot.services.cache_manager import CacheManager
+from bot.services.mal_api import MALAPIRequest
 
 data_processor = ProcessData()
+cache_manager = CacheManager()
+mal_api = MALAPIRequest()
 
 user_last_request = defaultdict(float)
 RATE_LIMIT = 5
@@ -43,24 +48,38 @@ async def handle_main_menu(msg: types.Message) -> None:
         return
 
     user_last_request[user_id] = current_time
-
     await msg.answer("⏳ Обрабатываю ваш запрос...")
 
     result = None
-    if msg.text == 'Самые рейтинговые онгоинги':
-        result = data_processor.format_output(None, 'airing')
-    elif msg.text == 'Топ по рейтингу':
-        result = data_processor.format_output(None, 'all')
-    elif msg.text == 'Топ по популярности':
-        result = data_processor.format_output(None, 'bypopularity')
-    elif msg.text == 'Получить рекомендации':
-        # Заглушка
-        result = "🎯 Функция рекомендаций находится в разработке"
+    raw_data = None
+    ranking_type = None
 
-    if result:
-        await msg.answer(result)
-    else:
-        await msg.answer("❌ Произошла ошибка при обработке запроса")
+    if msg.text == 'Самые рейтинговые онгоинги':
+        ranking_type = 'airing'
+    elif msg.text == 'Топ по рейтингу':
+        ranking_type = 'all'
+    elif msg.text == 'Топ по популярности':
+        ranking_type = 'bypopularity'
+    elif msg.text == 'Получить рекомендации':
+        await msg.answer("🎯 Функция рекомендаций находится в разработке")
+        return
+
+    if ranking_type:
+        try:
+            raw_data = cache_manager.get_cached_data(ranking_type)
+            if raw_data is None:
+                raw_data = await mal_api.get_anime_ranking(ranking_type)
+                if raw_data and raw_data.get('data'):
+                    cache_manager.save_cache(ranking_type, raw_data)
+                else:
+                    await msg.answer("❌ Не удалось получить данные от API MyAnimeList")
+                    return
+
+            df = data_processor.process_anime_data(raw_data, ranking_type)
+            result = data_processor.format_output(df, ranking_type)
+            await msg.answer(result)
+        except Exception as e:
+            await msg.answer(f"❌ Произошла ошибка при обработке запроса: {str(e)}")
 
 
 def register_user_handlers(dp: Dispatcher) -> None:
@@ -79,5 +98,4 @@ def register_user_handlers(dp: Dispatcher) -> None:
     )
 
     dp.include_router(router)
-
 
